@@ -46,24 +46,24 @@ class LoginScreenPreview extends StatelessWidget {
 
 src/
 └── main/
-    └── java/
-        └── com.github.devflores_ka.flutterquickview/
-            ├── analyzer/              # Análisis de código Dart y AST
-            │   ├── models/
-            │   │   └── WidgetNode.java
-            │   ├── AstVisitor.java
-            │   └── FlutterCodeAnalyzer.java
-            ├── renderer/              # Renderizado y procesos de Flutter
-            │   ├── process/
-            │   │   └── FlutterProcessManager.java
-            │   └── FlutterRenderService.java
-            ├── settings/              # Configuración del plugin
-            │   └── PluginSettings.java
-            ├── ui/                    # Interfaz de usuario del plugin
-            │   ├── actions/
-            │   │   └── PreviewAction.java
-            │   └── PreviewToolWindowsFactory.java
-            └── FlutterQuickViewBundle.java
+└── java/
+└── com.github.devflores_ka.flutterquickview/
+├── analyzer/              # Análisis de código Dart y AST
+│   ├── models/
+│   │   └── WidgetNode.java
+│   ├── AstVisitor.java
+│   └── FlutterCodeAnalyzer.java
+├── renderer/              # Renderizado y procesos de Flutter
+│   ├── process/
+│   │   └── FlutterProcessManager.java
+│   └── FlutterRenderService.java
+├── settings/              # Configuración del plugin
+│   └── PluginSettings.java
+├── ui/                    # Interfaz de usuario del plugin
+│   ├── actions/
+│   │   └── PreviewAction.java
+│   └── PreviewToolWindowsFactory.java
+└── FlutterQuickViewBundle.java
 
 ---
 ## Estado actual
