@@ -42,30 +42,6 @@ class LoginScreenPreview extends StatelessWidget {
 4. Muestra el resultado directamente en una Tool Window del IDE.
 
 ---
-## Estructura actual del proyecto
-
-src/
-└── main/
-└── java/
-└── com.github.devflores_ka.flutterquickview/
-├── analyzer/              # Análisis de código Dart y AST
-│   ├── models/
-│   │   └── WidgetNode.java
-│   ├── AstVisitor.java
-│   └── FlutterCodeAnalyzer.java
-├── renderer/              # Renderizado y procesos de Flutter
-│   ├── process/
-│   │   └── FlutterProcessManager.java
-│   └── FlutterRenderService.java
-├── settings/              # Configuración del plugin
-│   └── PluginSettings.java
-├── ui/                    # Interfaz de usuario del plugin
-│   ├── actions/
-│   │   └── PreviewAction.java
-│   └── PreviewToolWindowsFactory.java
-└── FlutterQuickViewBundle.java
-
----
 ## Estado actual
 
 En desarrollo. Actualmente estamos trabajando en:
@@ -100,4 +76,4 @@ MIT License — libre para uso y modificación. Agradecemos contribuciones.
 ---
 ## Autor
 
-Desarrollado por @devflores_ka — Proyecto open source pensado para mejorar la experiencia Flutter en el desarrollo diario.
+Desarrollado por @devflores-ka — Proyecto open source pensado para mejorar la experiencia Flutter en el desarrollo diario.
