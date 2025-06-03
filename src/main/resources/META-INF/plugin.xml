@@ -3,27 +3,114 @@
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>com.github.devflores-ka.flutterquickview</id>
 
-    <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Flutterquickview</name>
+    <!-- Public plugin name should be written in Title Case. -->
+    <name>FlutterQuickView</name>
+
+    <!-- Plugin version - should follow semantic versioning -->
+    <version>1.0.0</version>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor email="floresrojasluciano02@gmail.com" url="https://github.com/devflores-ka">Luciano Flores Hidalgo</vendor>
 
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager. -->
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
+    <h3>FlutterQuickView - Widget Preview for Flutter</h3>
+    <p>Permite previsualizar widgets Flutter directamente en Android Studio, similar a Jetpack Compose Preview.</p>
+
+    <h4>Características:</h4>
+    <ul>
+        <li>🚀 Previsualización inmediata de widgets Flutter</li>
+        <li>🎯 Detección automática de clases *Preview</li>
+        <li>⚡ Renderizado rápido sin ejecutar toda la app</li>
+        <li>🔄 Soporte para hot reload en previews</li>
+        <li>🎨 Personalización de temas y orientación</li>
+    </ul>
+
+    <h4>Uso:</h4>
+    <p>Crea clases que terminen en 'Preview' y extienden StatelessWidget o StatefulWidget,
+       luego usa el menú contextual o atajo de teclado para generar la previsualización.</p>
+
+    <p><em>Proyecto open source inspirado en mejorar la experiencia de desarrollo Flutter.</em></p>
   ]]></description>
 
-    <!-- Product and plugin compatibility requirements.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <!-- Change notes for this version -->
+    <change-notes><![CDATA[
+    <h4>Version 1.0.0</h4>
+    <ul>
+        <li>Detección automática de widgets Preview</li>
+        <li>Análisis de código Dart con AST</li>
+        <li>Interfaz básica para mostrar widgets encontrados</li>
+        <li>Validación de archivos Flutter</li>
+    </ul>
+  ]]></change-notes>
+
+    <!-- Product and plugin compatibility requirements. -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
 
-    <!-- Extension points defined by the plugin.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <!-- Optional dependency for Dart support -->
+    <!--depends optional="true" config-file="flutter-support.xml">Dart</depends-->
+
+    <!-- Minimum IDE version -->
+    <idea-version since-build="223"/>
+
+    <!-- Resource bundle for internationalization -->
+    <resource-bundle>messages.FlutterQuickViewBundle</resource-bundle>
+
+    <!-- Extension points defined by the plugin. -->
     <extensions defaultExtensionNs="com.intellij">
-
+        <!-- Tool Window Factory -->
+        <toolWindow
+                id="FlutterQuickView"
+                factoryClass="com.github.devflores_ka.flutterquickview.ui.PreviewToolWindowsFactory"
+                anchor="right"
+                secondary="true"/>
     </extensions>
+
+    <!-- Actions configuration -->
+    <actions>
+        <!-- Main Preview Action -->
+        <action id="com.github.devflores_ka.flutterquickview.PreviewAction"
+                class="com.github.devflores_ka.flutterquickview.ui.actions.PreviewAction"
+                text="Flutter Quick Preview"
+                description="Generate preview for Flutter widgets ending with 'Preview'">
+
+            <!-- Add to Editor context menu -->
+            <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="EditorToggleColumnMode"/>
+
+            <!-- Add to main menu -->
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+
+            <!-- Keyboard shortcut -->
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift P"/>
+            <keyboard-shortcut keymap="Mac OS X" first-keystroke="cmd shift P"/>
+        </action>
+
+        <!-- Action Group for multiple preview options -->
+        <group id="FlutterQuickView.Actions"
+               text="FlutterQuickView"
+               description="Flutter widget preview actions"
+               popup="true">
+
+            <action id="com.github.devflores_ka.flutterquickview.AnalyzeFileAction"
+                    class="com.github.devflores_ka.flutterquickview.ui.actions.PreviewAction"
+                    text="Analyze Current File"
+                    description="Analyze current Dart file for Preview widgets"/>
+
+            <action id="com.github.devflores_ka.flutterquickview.AnalyzeProjectAction"
+                    class="com.github.devflores_ka.flutterquickview.ui.actions.AnalyzeProjectAction"
+                    text="Analyze Entire Project"
+                    description="Analyze all Dart files in project for Preview widgets"/>
+
+            <separator/>
+
+            <action id="com.github.devflores_ka.flutterquickview.SettingsAction"
+                    class="com.github.devflores_ka.flutterquickview.ui.actions.SettingsAction"
+                    text="FlutterQuickView Settings"
+                    description="Configure FlutterQuickView settings"/>
+
+            <!-- Add group to Project View context menu for Dart files -->
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="EditSource"/>
+        </group>
+    </actions>
 </idea-plugin>

@@ -1,0 +1,28 @@
+<!-- Optional configuration loaded when Dart plugin is available -->
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Enhanced Dart file support -->
+        <lang.inspectionSuppressor
+                language="Dart"
+                implementationClass="com.github.devflores_ka.flutterquickview.inspections.FlutterPreviewInspectionSuppressor"/>
+
+        <!-- Code completion for Preview widgets -->
+        <completion.contributor
+                language="Dart"
+                implementationClass="com.github.devflores_ka.flutterquickview.completion.PreviewCompletionContributor"/>
+
+        <!-- Live templates for Preview widgets -->
+        <liveTemplateContext
+                implementation="com.github.devflores_ka.flutterquickview.templates.DartFlutterContext"/>
+    </extensions>
+
+    <actions>
+        <!-- Dart-specific actions that only appear when Dart plugin is loaded -->
+        <action id="com.github.devflores_ka.flutterquickview.CreatePreviewAction"
+                class="com.github.devflores_ka.flutterquickview.ui.actions.CreatePreviewAction"
+                text="Create Flutter Preview Widget"
+                description="Create a new Preview widget for the selected widget">
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+        </action>
+    </actions>
+</idea-plugin>
