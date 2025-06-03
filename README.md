@@ -1,6 +1,6 @@
 # FlutterQuickView 🚀
 
-> Plugin para Android Studio / IntelliJ que permite previsualizar widgets Flutter directamente en el IDE, inspirado en Jetpack Compose Preview.
+> Plugin para Android Studio que permite previsualizar widgets Flutter directamente en el IDE, inspirado en Jetpack Compose Preview.
 
 ## ✨ Visión
 
