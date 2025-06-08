@@ -41,6 +41,7 @@
         <li>Análisis de código Dart con AST</li>
         <li>Interfaz básica para mostrar widgets encontrados</li>
         <li>Validación de archivos Flutter</li>
+        <li>Herramientas de debugging del analizador</li>
     </ul>
   ]]></change-notes>
 
@@ -109,8 +110,24 @@
                     text="FlutterQuickView Settings"
                     description="Configure FlutterQuickView settings"/>
 
+            <!-- Debug Action -->
+            <action id="com.github.devflores_ka.flutterquickview.DebugAnalyzerAction"
+                    class="com.github.devflores_ka.flutterquickview.ui.actions.DebugAnalyzerAction"
+                    text="Debug Analyzer"
+                    description="Run debug tests on the analyzer">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift D"/>
+            </action>
+
             <!-- Add group to Project View context menu for Dart files -->
             <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="EditSource"/>
         </group>
+
+        <!-- Quick access to Debug Analyzer in Tools menu -->
+        <action id="com.github.devflores_ka.flutterquickview.DebugAnalyzerToolsAction"
+                class="com.github.devflores_ka.flutterquickview.ui.actions.DebugAnalyzerAction"
+                text="FlutterQuickView Debug Analyzer"
+                description="Debug and test the Flutter Preview analyzer">
+            <add-to-group group-id="ToolsMenu" anchor="after" relative-to-action="com.github.devflores_ka.flutterquickview.PreviewAction"/>
+        </action>
     </actions>
 </idea-plugin>
