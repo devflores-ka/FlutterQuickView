@@ -1,5 +1,6 @@
 package com.github.devflores_ka.flutterquickview.ui.actions;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -20,6 +21,11 @@ public class SettingsAction extends AnAction {
         super("FlutterQuickView Settings",
                 "Configure FlutterQuickView settings",
                 null);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
     @Override

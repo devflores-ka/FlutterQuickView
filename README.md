@@ -54,7 +54,7 @@ En desarrollo. Actualmente estamos trabajando en:
 
 ## Roadmap
 
- [ ] Detectar widgets *Preview en archivos abiertos.
+ [x] Detectar widgets *Preview en archivos abiertos.
 
  [ ] Generar y ejecutar preview.dart automáticamente.
 

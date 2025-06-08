@@ -2,6 +2,8 @@ package com.github.devflores_ka.flutterquickview.ui.actions;
 
 import com.github.devflores_ka.flutterquickview.analyzer.FlutterCodeAnalyzer;
 import com.github.devflores_ka.flutterquickview.analyzer.models.WidgetNode;
+import com.github.devflores_ka.flutterquickview.ui.PreviewToolWindowService;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -10,12 +12,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.github.devflores_ka.flutterquickview.FlutterQuickViewBundle;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 /**
- * Acción que detecta y muestra widgets Preview en el archivo actual
+ * Acción que detecta widgets Preview y los envía a la Tool Window vía servicio
  */
 public class PreviewAction extends AnAction {
     private static final Logger LOG = Logger.getInstance(PreviewAction.class);
@@ -27,9 +31,17 @@ public class PreviewAction extends AnAction {
     }
 
     @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
+    }
+
+    @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        if (project == null) return;
+        if (project == null) {
+            LOG.warn("No project available");
+            return;
+        }
 
         VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
         if (file == null) {
@@ -47,9 +59,28 @@ public class PreviewAction extends AnAction {
         }
 
         try {
-            // Analizar el archivo
+            // 1. Obtener el servicio de comunicación con la Tool Window
+            PreviewToolWindowService toolWindowService = PreviewToolWindowService.getInstance(project);
+
+            // 2. Abrir la Tool Window
+            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("FlutterQuickView");
+            if (toolWindow != null) {
+                toolWindow.activate(null);
+                LOG.info("Tool Window activada");
+            } else {
+                LOG.warn("Tool Window 'FlutterQuickView' no encontrada");
+            }
+
+            // 3. Analizar el archivo
+            LOG.info("Analizando archivo: " + file.getName());
+            toolWindowService.notifyStatusUpdate("Analizando " + file.getName() + "...");
+
             List<WidgetNode> previewWidgets = FlutterCodeAnalyzer.analyzeFile(file, project);
 
+            // 4. Notificar resultados a la Tool Window
+            toolWindowService.notifyFileAnalyzed(file, previewWidgets);
+
+            // 5. Mostrar mensaje al usuario
             if (previewWidgets.isEmpty()) {
                 Messages.showInfoMessage(project,
                         """
@@ -57,55 +88,36 @@ public class PreviewAction extends AnAction {
                                 
                                 Los widgets Preview deben:
                                 • Terminar con 'Preview' en el nombre de la clase
-                                • Extender de StatelessWidget o StatefulWidget""",
+                                • Extender de StatelessWidget o StatefulWidget
+                                
+                                Revisa la Tool Window 'FlutterQuickView' para más detalles.""",
                         "FlutterQuickView - Sin Resultados");
             } else {
-                // Mostrar resultados
-                showPreviewResults(project, previewWidgets, file.getName());
+                Messages.showInfoMessage(project,
+                        "Se encontraron " + previewWidgets.size() + " widgets Preview.\n\n" +
+                                "Widgets encontrados:\n" +
+                                previewWidgets.stream()
+                                        .map(w -> "• " + w.getClassName())
+                                        .reduce((a, b) -> a + "\n" + b)
+                                        .orElse("") +
+                                "\n\nRevisa la Tool Window 'FlutterQuickView' para renderizar los widgets.",
+                        "FlutterQuickView - Widgets Encontrados");
             }
+
+            LOG.info("Análisis completado. Widgets encontrados: " + previewWidgets.size());
 
         } catch (Exception ex) {
             LOG.error("Error analizando archivo " + file.getPath(), ex);
+
+            // Notificar error a la Tool Window
+            PreviewToolWindowService toolWindowService = PreviewToolWindowService.getInstance(project);
+            toolWindowService.notifyAnalysisError(file, ex);
+
             Messages.showErrorDialog(project,
-                    "Error analizando el archivo: " + ex.getMessage(),
+                    "Error analizando el archivo: " + ex.getMessage() +
+                            "\n\nRevisa la Tool Window 'FlutterQuickView' para más detalles.",
                     "FlutterQuickView - Error");
         }
-    }
-
-    private void showPreviewResults(Project project, List<WidgetNode> widgets, String fileName) {
-        StringBuilder message = new StringBuilder();
-        message.append("Widgets Preview encontrados en ").append(fileName).append(":\n\n");
-
-        for (int i = 0; i < widgets.size(); i++) {
-            WidgetNode widget = widgets.get(i);
-            message.append(String.format("%d. %s (línea %d)\n",
-                    i + 1,
-                    widget.getClassName(),
-                    widget.getLineNumber()));
-        }
-
-        message.append("\n¿Desea generar previsualizaciones para estos widgets?");
-
-        int result = Messages.showYesNoDialog(project,
-                message.toString(),
-                "FlutterQuickView - Widgets Encontrados",
-                Messages.getQuestionIcon());
-
-        if (result == Messages.YES) {
-            // TODO: Aquí llamarías al servicio de renderizado
-            generatePreviews(project, widgets);
-        }
-    }
-
-    private void generatePreviews(Project project, List<WidgetNode> widgets) {
-        // Por ahora solo mostramos un mensaje
-        Messages.showInfoMessage(project,
-                "Generación de previsualizaciones próximamente disponible.\n\n" +
-                        "Widgets a procesar: " + widgets.size(),
-                "FlutterQuickView - En Desarrollo");
-
-        // TODO: Implementar la llamada al FlutterRenderService
-        // FlutterRenderService.getInstance().generatePreviews(widgets);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.github.devflores_ka.flutterquickview.ui.actions;
 
 import com.github.devflores_ka.flutterquickview.analyzer.FlutterCodeAnalyzer;
 import com.github.devflores_ka.flutterquickview.analyzer.models.WidgetNode;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -26,6 +27,11 @@ public class AnalyzeProjectAction extends AnAction {
         super("Analyze Entire Project",
                 "Analyze all Dart files in project for Preview widgets",
                 null);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
     @Override

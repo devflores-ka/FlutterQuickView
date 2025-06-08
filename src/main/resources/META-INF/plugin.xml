@@ -83,7 +83,7 @@
 
             <!-- Keyboard shortcut -->
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift P"/>
-            <keyboard-shortcut keymap="Mac OS X" first-keystroke="cmd shift P"/>
+            <keyboard-shortcut keymap="Mac OS X" first-keystroke="meta shift P"/>
         </action>
 
         <!-- Action Group for multiple preview options -->
