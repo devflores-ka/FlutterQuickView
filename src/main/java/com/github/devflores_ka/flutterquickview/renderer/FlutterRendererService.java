@@ -1,6 +1,7 @@
 package com.github.devflores_ka.flutterquickview.renderer;
 
 import com.github.devflores_ka.flutterquickview.analyzer.models.WidgetNode;
+import com.github.devflores_ka.flutterquickview.generator.MobilePreviewGenerator;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -48,9 +49,10 @@ public final class FlutterRendererService {
     private static final int PREVIEW_HEIGHT = 667;
     private static final int TIMEOUT_SECONDS = 180;
 
-    public FlutterRendererService(Project project) {
+    public FlutterRendererService(Project project, FlutterMobileRenderer mobileRenderer) {
         this.project = project;
         this.processManager = new FlutterProcessManager(project);
+        this.mobileRenderer = mobileRenderer;
     }
 
     public static FlutterRendererService getInstance(Project project) {
@@ -743,6 +745,75 @@ public final class FlutterRendererService {
         }
     }
 
+    // AGREGAR AL FINAL DE FlutterRendererService.java, después de la clase CacheStats:
 
+    // ========== NUEVAS FUNCIONALIDADES MÓVILES ==========
+
+    private final FlutterMobileRenderer mobileRenderer;
+
+    // Constructor actualizado - REEMPLAZAR el constructor existente
+    public FlutterRendererService(Project project) {
+        this.project = project;
+        this.processManager = new FlutterProcessManager(project);
+        this.mobileRenderer = new FlutterMobileRenderer(project); // NUEVO
+    }
+
+    /**
+     * NUEVO: Renderiza widget con apariencia móvil realista
+     */
+    public void renderWidgetMobileWithProgress(WidgetNode widget, MobilePreviewGenerator.MobileDevice device, RenderCallback callback) {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Renderizando móvil " + widget.getClassName(), true) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    indicator.setText("Configurando dispositivo móvil...");
+                    indicator.setFraction(0.1);
+
+                    // Usar el renderizador móvil específico
+                    BufferedImage result = mobileRenderer.renderWidgetMobile(widget, device);
+
+                    indicator.setFraction(1.0);
+                    callback.onSuccess(result);
+
+                } catch (Exception e) {
+                    LOG.error("Error en renderizado móvil", e);
+                    callback.onError(e);
+                }
+            }
+        });
+    }
+
+    /**
+     * NUEVO: Renderiza con dispositivo móvil por defecto (Pixel 7)
+     */
+    public void renderWidgetMobileWithProgress(WidgetNode widget, RenderCallback callback) {
+        renderWidgetMobileWithProgress(widget, MobilePreviewGenerator.MobileDevice.PIXEL_7, callback);
+    }
+
+    /**
+     * NUEVO: Obtiene el renderizador móvil
+     */
+    public FlutterMobileRenderer getMobileRenderer() {
+        return mobileRenderer;
+    }
+
+    /**
+     * NUEVO: Limpia cache móvil
+     */
+    public void clearMobileCache() {
+        if (mobileRenderer != null) {
+            mobileRenderer.clearMobileCache();
+        }
+    }
+
+    /**
+     * NUEVO: Obtiene estadísticas del cache móvil
+     */
+    public String getMobileCacheStats() {
+        if (mobileRenderer != null) {
+            return mobileRenderer.getMobileCacheStats();
+        }
+        return "Mobile cache: 0 images";
+    }
 
 }

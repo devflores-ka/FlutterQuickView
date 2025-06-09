@@ -3,6 +3,8 @@ package com.github.devflores_ka.flutterquickview.ui;
 import com.github.devflores_ka.flutterquickview.analyzer.FlutterCodeAnalyzer;
 import com.github.devflores_ka.flutterquickview.analyzer.models.WidgetNode;
 import com.github.devflores_ka.flutterquickview.renderer.FlutterRendererService;
+import com.github.devflores_ka.flutterquickview.renderer.FlutterMobileRenderer;
+import com.github.devflores_ka.flutterquickview.ui.components.MobilePreviewComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -35,6 +37,7 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+        // CORREGIDO: Constructor sin parámetros extra
         PreviewToolWindowContent content = new PreviewToolWindowContent(project);
 
         Content toolWindowContent = ContentFactory.getInstance().createContent(
@@ -65,10 +68,11 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
 
         // Servicios
         private final FlutterRendererService rendererService;
+        private final FlutterMobileRenderer mobileRenderer;
         private final PreviewToolWindowService toolWindowService;
 
-        // Cache de componentes de preview
-        private final ConcurrentMap<String, PreviewComponent> previewComponents = new ConcurrentHashMap<>();
+        // Cache de componentes de preview - CORREGIDO: Tipo genérico
+        private final ConcurrentMap<String, Object> previewComponents = new ConcurrentHashMap<>();
 
         // Listeners
         private MessageBusConnection messageBusConnection;
@@ -76,10 +80,12 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
         // Estado actual
         private VirtualFile currentFile;
 
+        // CORREGIDO: Constructor sin parámetros extra
         public PreviewToolWindowContent(Project project) {
             this.project = project;
             this.rendererService = FlutterRendererService.getInstance(project);
             this.toolWindowService = PreviewToolWindowService.getInstance(project);
+            this.mobileRenderer = rendererService.getMobileRenderer(); // NUEVO: Obtener del servicio
             this.mainPanel = new JPanel(new BorderLayout());
             this.previewsPanel = new JPanel();
             this.logsArea = new JTextArea();
@@ -96,7 +102,7 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
             toolWindowService.addListener(this);
 
             // Log inicial
-            addLog("INFO", "FlutterQuickView Tool Window initialized");
+            addLog("INFO", "FlutterQuickView Tool Window initialized with mobile support");
             addLog("INFO", "Project: " + project.getName());
             addLog("INFO", "Listening for preview events...");
         }
@@ -181,7 +187,7 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
             JPanel topPanel = new JPanel(new BorderLayout());
 
             JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            titlePanel.add(new JLabel("Flutter Previews"));
+            titlePanel.add(new JLabel("📱 Flutter Mobile Previews")); // ACTUALIZADO: Título con emoji
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
             buttonPanel.add(analyzeButton);
@@ -202,7 +208,7 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
             JPanel bottomPanel = new JPanel(new BorderLayout());
             bottomPanel.add(statusLabel, BorderLayout.CENTER);
 
-            // Cache stats
+            // Cache stats - ACTUALIZADO: Con estadísticas móviles
             JLabel cacheStatsLabel = createCacheStatsLabel();
             bottomPanel.add(cacheStatsLabel, BorderLayout.EAST);
 
@@ -288,18 +294,21 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
             }
         }
 
+        // ACTUALIZADO: Usar solo componentes móviles
         private void displayPreviews(List<WidgetNode> widgets) {
-            addLog("INFO", "Displaying " + widgets.size() + " preview components");
+            addLog("INFO", "Displaying " + widgets.size() + " mobile preview components");
 
             // Limpiar previews existentes
             previewsPanel.removeAll();
             previewComponents.clear();
 
             for (WidgetNode widget : widgets) {
-                addLog("DEBUG", "Creating preview component for: " + widget.getClassName());
-                PreviewComponent previewComponent = new PreviewComponent(widget, rendererService, this);
-                previewComponents.put(widget.getClassName(), previewComponent);
-                previewsPanel.add(previewComponent.getPanel());
+                addLog("DEBUG", "Creating mobile preview component for: " + widget.getClassName());
+
+                // USAR SOLO COMPONENTE MÓVIL
+                MobilePreviewComponent mobilePreviewComponent = new MobilePreviewComponent(widget, mobileRenderer, this);
+                previewComponents.put(widget.getClassName(), mobilePreviewComponent);
+                previewsPanel.add(mobilePreviewComponent.getPanel());
                 previewsPanel.add(Box.createVerticalStrut(10)); // Espaciado
             }
 
@@ -307,13 +316,13 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
             previewsPanel.revalidate();
             previewsPanel.repaint();
 
-            addLog("SUCCESS", "Preview components created successfully");
+            addLog("SUCCESS", "Mobile preview components created successfully");
         }
 
         private void handleFileChanged(VirtualFile file) {
             addLog("INFO", "File changed detected: " + file.getName());
 
-            // Si es el archivo actual, refrescar automáticamente
+            // Sí es el archivo actual, refrescar automáticamente
             if (currentFile != null && file.equals(currentFile)) {
                 addLog("INFO", "Current file changed, auto-refreshing...");
                 analyzeFileDirectly(file);
@@ -357,15 +366,15 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
             JPanel panel = new JPanel(new BorderLayout());
             panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-            JLabel titleLabel = new JLabel("Welcome to FlutterQuickView", SwingConstants.CENTER);
+            JLabel titleLabel = new JLabel("📱 Welcome to FlutterQuickView Mobile", SwingConstants.CENTER);
             titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 16f));
 
             JLabel messageLabel = new JLabel("<html><center>" +
-                    "<b>How to use:</b><br><br>" +
+                    "<b>How to use Mobile Previews:</b><br><br>" +
                     "1. Open a Dart file with Preview widgets<br>" +
                     "2. Press <b>Ctrl+Shift+P</b> to analyze<br>" +
-                    "3. Preview widgets will appear here<br>" +
-                    "4. Click 'Render' to generate previews<br><br>" +
+                    "3. Select your target device (Pixel 7, iPhone 14, etc.)<br>" +
+                    "4. Click '🚀 Renderizar Móvil' for native-looking previews<br><br>" +
                     "<i>Preview widgets must end with 'Preview' and extend StatelessWidget or StatefulWidget</i>" +
                     "</center></html>", SwingConstants.CENTER);
 
@@ -430,13 +439,19 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
             return panel;
         }
 
+        // CORREGIDO: Método con soporte móvil
         private JLabel createCacheStatsLabel() {
             JLabel label = new JLabel();
 
-            // Actualizar stats cada 5 segundos
+            // Actualizar stats cada 5 segundos incluyendo cache móvil
             Timer timer = new Timer(5000, e -> {
-                String stats = rendererService.getCacheStats().toString();
-                label.setText(stats);
+                try {
+                    String classicStats = rendererService.getCacheStats().toString();
+                    String mobileStats = rendererService.getMobileCacheStats();
+                    label.setText(classicStats + " | " + mobileStats);
+                } catch (Exception ex) {
+                    label.setText("Cache stats unavailable");
+                }
             });
             timer.start();
 
@@ -488,7 +503,7 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
          * Cleanup al cerrar
          */
         public void dispose() {
-            // Desregistrarse del servicio
+            // Des registrarse del servicio
             toolWindowService.removeListener(this);
 
             if (messageBusConnection != null) {
@@ -500,110 +515,5 @@ public class PreviewToolWindowsFactory implements ToolWindowFactory {
         }
     }
 
-    /**
-     * Componente individual para mostrar un preview de widget
-     */
-    private static class PreviewComponent {
-        private final WidgetNode widget;
-        private final FlutterRendererService rendererService;
-        private final PreviewToolWindowContent parent;
-        private final JPanel panel;
-        private final JLabel imageLabel;
-        private final JLabel statusLabel;
-        private final JButton renderButton;
-
-        public PreviewComponent(WidgetNode widget, FlutterRendererService rendererService, PreviewToolWindowContent parent) {
-            this.widget = widget;
-            this.rendererService = rendererService;
-            this.parent = parent;
-            this.panel = new JPanel(new BorderLayout());
-            this.imageLabel = new JLabel();
-            this.statusLabel = new JLabel("Ready to render");
-            this.renderButton = new JButton("Render");
-
-            setupComponent();
-        }
-
-        private void setupComponent() {
-            panel.setBorder(BorderFactory.createTitledBorder(widget.getClassName() + " (line " + widget.getLineNumber() + ")"));
-            panel.setPreferredSize(new Dimension(400, 350));
-
-            // Panel de imagen
-            imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            imageLabel.setVerticalAlignment(SwingConstants.CENTER);
-            imageLabel.setPreferredSize(new Dimension(375, 250));
-            imageLabel.setBorder(BorderFactory.createLoweredBevelBorder());
-            imageLabel.setText("Click 'Render' to generate preview");
-
-            // Panel de controles
-            JPanel controlPanel = new JPanel(new BorderLayout());
-            controlPanel.add(statusLabel, BorderLayout.CENTER);
-            controlPanel.add(renderButton, BorderLayout.EAST);
-
-            renderButton.addActionListener(e -> startRendering());
-
-            panel.add(imageLabel, BorderLayout.CENTER);
-            panel.add(controlPanel, BorderLayout.SOUTH);
-        }
-
-        public void startRendering() {
-            parent.addLog("INFO", "Starting render for: " + widget.getClassName());
-            statusLabel.setText("Rendering...");
-            renderButton.setEnabled(false);
-            imageLabel.setIcon(null);
-            imageLabel.setText("Rendering " + widget.getClassName() + "...");
-
-            rendererService.renderWidgetWithProgress(widget, new FlutterRendererService.RenderCallback() {
-                @Override
-                public void onSuccess(BufferedImage image) {
-                    SwingUtilities.invokeLater(() -> {
-                        parent.addLog("SUCCESS", "Render completed for " + widget.getClassName() +
-                                " - Image: " + image.getWidth() + "x" + image.getHeight());
-
-                        // Escalar la imagen para que quepa en el panel
-                        ImageIcon scaledIcon = scaleImageToFit(image, 375, 250);
-                        imageLabel.setIcon(scaledIcon);
-                        imageLabel.setText("");
-                        statusLabel.setText("Rendered successfully (" + image.getWidth() + "x" + image.getHeight() + ")");
-                        renderButton.setEnabled(true);
-                    });
-                }
-
-                @Override
-                public void onError(Exception error) {
-                    SwingUtilities.invokeLater(() -> {
-                        parent.addLog("ERROR", "Render failed for " + widget.getClassName() +
-                                ": " + error.getMessage());
-
-                        imageLabel.setText("<html><center>Render failed:<br>" + error.getMessage() + "</center></html>");
-                        statusLabel.setText("Render failed");
-                        renderButton.setEnabled(true);
-                    });
-                }
-            });
-        }
-
-        /**
-         * Escala una imagen para que quepa en las dimensiones especificadas manteniendo la proporción
-         */
-        private ImageIcon scaleImageToFit(BufferedImage image, int maxWidth, int maxHeight) {
-            int originalWidth = image.getWidth();
-            int originalHeight = image.getHeight();
-
-            // Calcular la escala para que la imagen quepa
-            double scaleX = (double) maxWidth / originalWidth;
-            double scaleY = (double) maxHeight / originalHeight;
-            double scale = Math.min(scaleX, scaleY);
-
-            int newWidth = (int) (originalWidth * scale);
-            int newHeight = (int) (originalHeight * scale);
-
-            java.awt.Image scaledImage = image.getScaledInstance(newWidth, newHeight, java.awt.Image.SCALE_SMOOTH);
-            return new ImageIcon(scaledImage);
-        }
-
-        public JPanel getPanel() {
-            return panel;
-        }
-    }
+    // ELIMINADO: PreviewComponent clase antigua (ahora se usa solo MobilePreviewComponent)
 }

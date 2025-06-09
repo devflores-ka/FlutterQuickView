@@ -49,12 +49,15 @@ public class FlutterProcessManager {
         }
     }
 
+
+// AGREGAR este método a FlutterProcessManager.java:
+
     /**
-     * Detecta automáticamente la ubicación del Flutter SDK
+     * Detecta automáticamente la ubicación del Flutter SDK en Windows
      */
     private String detectFlutterSdk() {
         try {
-            // Método 1: Usar 'flutter --version' para detectar instalación
+            // Método 1: Usar 'where flutter' en Windows
             ProcessBuilder pb = new ProcessBuilder();
             if (SystemInfo.isWindows) {
                 pb.command("where", "flutter");
@@ -69,35 +72,56 @@ public class FlutterProcessManager {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                     String flutterPath = reader.readLine();
                     if (flutterPath != null && !flutterPath.trim().isEmpty()) {
-                        // Extraer directorio SDK del path del ejecutable
-                        Path sdkPath = Paths.get(flutterPath).getParent();
-                        if (sdkPath != null && Files.exists(sdkPath.resolve("bin").resolve("flutter"))) {
+                        // En Windows, 'where' puede devolver flutter.bat
+                        if (flutterPath.endsWith("flutter.bat")) {
+                            // Extraer directorio padre del bin
+                            Path sdkPath = Paths.get(flutterPath).getParent().getParent();
+                            return sdkPath.toString();
+                        } else {
+                            // En Unix, extraer directorio padre
+                            Path sdkPath = Paths.get(flutterPath).getParent().getParent();
                             return sdkPath.toString();
                         }
                     }
                 }
             }
 
-            // Método 2: Buscar en ubicaciones comunes
-            String[] commonPaths = getCommonFlutterPaths();
+            // Método 2: Buscar en ubicaciones comunes (TU RUTA PRIMERO)
+            String[] commonPaths = {
+                    "C:\\src\\flutter",
+                    "C:\\flutter",
+                    "C:\\tools\\flutter",
+                    System.getProperty("user.home") + "\\flutter",
+                    System.getProperty("user.home") + "\\AppData\\Local\\flutter",
+                    System.getProperty("user.home") + "\\scoop\\apps\\flutter\\current", // Scoop
+                    "C:\\ProgramData\\chocolatey\\lib\\flutter\\tools\\flutter", // Chocolatey
+            };
+
             for (String path : commonPaths) {
                 Path flutterDir = Paths.get(path);
-                if (Files.exists(flutterDir.resolve("bin").resolve(getFlutterExecutableName()))) {
+                Path flutterBin = flutterDir.resolve("bin").resolve("flutter.bat");
+                if (Files.exists(flutterBin)) {
+                    LOG.info("Flutter encontrado en: " + path);
                     return flutterDir.toString();
                 }
             }
 
             // Método 3: Variable de entorno FLUTTER_ROOT
             String flutterRoot = System.getenv("FLUTTER_ROOT");
-            if (flutterRoot != null && Files.exists(Paths.get(flutterRoot, "bin", getFlutterExecutableName()))) {
-                return flutterRoot;
+            if (flutterRoot != null) {
+                Path flutterBin = Paths.get(flutterRoot, "bin", "flutter.bat");
+                if (Files.exists(flutterBin)) {
+                    return flutterRoot;
+                }
             }
+
+            LOG.warn("No se pudo detectar Flutter automáticamente");
+            return null;
 
         } catch (Exception e) {
             LOG.warn("Error detectando Flutter SDK", e);
+            return null;
         }
-
-        return null;
     }
 
     /**
@@ -139,7 +163,11 @@ public class FlutterProcessManager {
      * Obtiene la ruta completa al ejecutable Flutter
      */
     private String getFlutterExecutablePath(String sdkPath) {
-        return Paths.get(sdkPath, "bin", getFlutterExecutableName()).toString();
+        if (SystemInfo.isWindows) {
+            return Paths.get(sdkPath, "bin", "flutter.bat").toString();
+        } else {
+            return Paths.get(sdkPath, "bin", "flutter").toString();
+        }
     }
 
     /**
